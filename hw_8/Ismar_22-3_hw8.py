@@ -19,21 +19,65 @@ def create_table(conn, sql):
         print(Error)
 
 
-def create_student(conn, student):
+def create_product(conn, product: tuple):
     try:
-        sql = '''INSERT INTO students 
-        (full_name, mark, hobby, birth_date, is_married) 
-        VALUES (?, ?, ?, ?, ?)'''
+        sql = '''INSERT INTO products
+        (product_title, price, quantity)
+        VALUES (?, ?, ?)'''
         cursor = conn.cursor()
-        cursor.execute(sql, student)
+        cursor.execute(sql, product)
         conn.commit()
     except Error:
         print(Error)
 
 
-def delete_student(conn, id):
+def create_products(conn):
+    create_product(conn, ('Кефир', 17.80, 7))  # 1
+    create_product(conn, ('Мороженое: Бахрома', 60.53, 30))  # 2
+    create_product(conn, ('Пепси 2л', 135.00, 4))  # 3
+    create_product(conn, ('NITRO', 62.40, 12))  # 4
+    create_product(conn, ('Контик', 34.90, 5))  # 5
+    create_product(conn, ('Жидкое мыло', 67.89, 2))  # 6
+    create_product(conn, ('Мыло детское', 108.60, 7))  # 7
+    create_product(conn, ('Кириешки Flint', 26.12, 20))  # 8
+    create_product(conn, ('Семечки Джин', 59.99, 6))  # 9
+    create_product(conn, ('Гамбургер "Тойбосс"', 105.00, 3))  # 10
+    create_product(conn, ('Alpen Gold', 114.59, 4))  # 11
+    create_product(conn, ('Asu!', 33.40, 8))  # 12
+    create_product(conn, ('Моющее средство', 73.70, 4))  # 13
+    create_product(conn, ('Порошок', 250.00, 3))  # 14
+    create_product(conn, ('Подсолнечное Масло', 240.00, 5))  # 15
+    create_product(conn, ('Сливочное Масло', 340.00, 7))  # 16
+    create_product(conn, ('Масло для бутербротов', 300.00, 15))  # 17
+    create_product(conn, ('Домашнее Масло', 150.00, 5))  # 18
+    create_product(conn, ('Заводское Масло', 200.00, 12))  # 19
+    create_product(conn, ('Детское-лечебное Масло', 400.00, 2))  # 20
+
+
+
+def update_product_quantity(conn, product: tuple):
     try:
-        sql = '''DELETE FROM students WHERE id = ?'''
+        sql = '''UPDATE products SET quantity = ? WHERE id = ?'''
+        cursor = conn.cursor()
+        cursor.execute(sql, product)
+        conn.commit()
+    except Error:
+        print(Error)
+
+
+def update_product_price(conn, product: tuple):
+    try:
+        sql = '''UPDATE products SET price = ? WHERE id = ?'''
+        cursor = conn.cursor()
+        cursor.execute(sql, product)
+        conn.commit()
+    except Error:
+        print(Error)
+
+
+def delete_product_by_id(conn, id: int):
+    try:
+        sql = '''DELETE FROM products WHERE id = ?'''
         cursor = conn.cursor()
         cursor.execute(sql, (id,))
         conn.commit()
@@ -41,80 +85,58 @@ def delete_student(conn, id):
         print(Error)
 
 
-def update_student_mark_and_martial_status(conn, student):
+def print_all_products(conn):
     try:
-        sql = '''UPDATE students SET mark = ?, is_married = ? WHERE id = ?'''
-        cursor = conn.cursor()
-        cursor.execute(sql, student)
-        conn.commit()
-    except Error:
-        print(Error)
-
-def select_all_students(conn):
-    try:
-        sql = """SELECT full_name, is_married, mark FROM students WHERE full_name REGEXP 'P[A-Za-z]*'"""
+        sql = '''SELECT * FROM products'''
         cursor = conn.cursor()
         cursor.execute(sql)
-
         rows = cursor.fetchall()
-        print(rows)
-
+        for row in rows:
+            print(row)
     except Error:
         print(Error)
 
-def select_all_students_by_mark(conn, mark):
+
+def print_all_products_by_price_and_quntity(conn):
     try:
-        sql = '''SELECT * FROM students WHERE mark >= ? and is_married == TRUE'''
+        sql = '''SELECT * FROM products WHERE price < 100.0 AND quantity > 5'''
         cursor = conn.cursor()
-        cursor.execute(sql, (mark,))
-
+        cursor.execute(sql)
         rows = cursor.fetchall()
-        print(rows)
-
+        for row in rows:
+            print(row)
     except Error:
         print(Error)
 
 
-connection = create_connection("gr22-3.db")
+def search_by_word(conn, word):
+    try:
+        sql = '''SELECT * FROM products WHERE product_title LIKE ?'''
+        cursor = conn.cursor()
+        cursor.execute(sql, ('%'+word+'%',))
 
-create_students_table = '''
-CREATE TABLE students (
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+    except Error:
+        print(Error)
+
+
+connection = create_connection("hw.db")
+
+create_products_table = '''
+CREATE TABLE products (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-full_name VARCHAR (200) NOT NULL,
-mark DOUBLE (5, 2) NOT NULL DEFAULT 0.0,
-hobby TEXT DEFAULT NULL,
-birth_date DATE NOT NULL,
-is_married BOOLEAN DEFAULT FALSE
+product_title VARCHAR (200) NOT NULL,
+price DOUBLE (10, 2) NOT NULL DEFAULT 0.0,
+quantity INTEGER (5) NOT NULL DEFAULT 0
 )
 '''
 
 if connection is not None:
-    print("Connected Success!")
-
-    # select_all_students_by_mark(connection, 90)
-
-    select_all_students(connection)
-
-    # update_student_mark_and_martial_status(connection, (50.23, False, 3))
-
-    delete_student(connection, 1)
-
-    # create_table(connection, create_students_table)
-
-    # create_student(connection, ("Adigine Zhumaliev", 80.03, None, "2007-04-04", True))
-    #
-    # create_student(connection, ("Reina Arstanbekova", 98.23, "Tennis", "2004-10-19", False))
-    # create_student(connection, ("Mark Daniels", 77.12, "Football", "1999-01-02", False))
-    # create_student(connection, ("Alex Brilliant", 77.12, None, "1989-12-31", True))
-    # create_student(connection, ("Diana Julls", 99.3, "Tennis", "2005-01-22", True))
-    # create_student(connection, ("Michael Corse", 100.0, "Diving", "2001-09-17", True))
-    # create_student(connection, ("Jack Moris", 50.2, "Fishing and cooking", "2001-07-12", True))
-    # create_student(connection, ("Viola Manilson", 41.82, None, "1991-03-01", False))
-    # create_student(connection, ("Joanna Moris", 100.0, "Painting and arts", "2004-04-13", False))
-    # create_student(connection, ("Peter Parker", 32.0, "Travelling and bloging", "2002-11-28", False))
-    # create_student(connection, ("Paula Parkerson", 77.09, None, "2001-11-28", True))
-    # create_student(connection, ("George Newel", 93.0, "Photography", "1981-01-24", True))
-    # create_student(connection, ("Miranda Alistoun", 87.55, "Playing computer games", "1997-12-22", False))
-    # create_student(connection, ("Fiona Giordano", 66.12, "Driving fast", "1977-01-15", True))
-
-    print("Done!")
+    print('Connected Successfully!')
+    create_products(connection)
+    create_table(connection, create_products_table)
+    print_all_products_by_price_and_quntity(connection)
+    search_by_word(connection, 'мыло' or 'Масло')
+    print('Done')
